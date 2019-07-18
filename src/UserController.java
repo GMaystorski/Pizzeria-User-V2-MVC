@@ -1,6 +1,9 @@
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.JButton;
 
 import static constants.Constants.*;
 
@@ -20,12 +23,21 @@ public class UserController {
 			case ADMIN_MENU_THIRD : return createAdminThirdOptionListener();
 			case ADMIN_MENU_FOURTH : return createAdminFourthOptionListener();
 			
+			case CLIENT_MENU_FIRST : return createClientFirstOptionListener();
+			case CLIENT_MENU_SECOND : return createClientSecondOptionListener();
+			case CLIENT_MENU_THIRD : return createClientThirdOptionListener(0);
+			
 			case ADD : return createAddListener(); 
 			case UPDATE : return createUpdateListener(count);
 			case DELETE : return createDeleteListener(count);
 			case CHANGE_TO_ADMIN : return createChangeTypeListener(count,1);
 			case CHANGE_TO_CLIENT : return createChangeTypeListener(count,0);
 			case GET_ORDERS : return createGetOrdersListener();
+			case PROCEED_TO_ORDER : return createProceedToOrderListener();
+			case ADD_TO_CART : return createAddToCartListener(count);
+			case REMOVE_FROM_CART : return createRemoveFromCartListener(count);
+			case ENTER_LOCATION : return createEnterLocationListener();
+			
 			case LOG_OUT : return createLogOutListener();
 			case GO_BACK : return createBackListener();
 			
@@ -128,6 +140,78 @@ public class UserController {
 		};
 	}
 	
+	private static ActionListener createClientFirstOptionListener() {
+		return new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(model.getCart().isEmpty()) {
+					view.displayMessage("Your cart is empty! Please select products and come back.");
+					view.pressDummyButton(createClientSecondOptionListener());
+				}
+				else {
+					model.sendMessage(MENU_FIRST);
+					view.clearFrame();
+					view.enterLocation();
+				}
+				
+			}
+			
+		};
+	}
+	
+	private static ActionListener createClientSecondOptionListener() {
+		return new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				model.sendMessage(MENU_SECOND);
+				view.clearFrame();
+				List<Object> products = (List<Object>) model.receiveObject();
+				view.viewProducts(products);
+			}
+			
+		};
+	}
+	
+
+	private static ActionListener createClientThirdOptionListener(int index) {
+		return new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(index == 0) {
+				model.sendMessage(MENU_THIRD);
+				view.clearFrame();
+				}
+				int count = (int) model.receiveObject();
+				if(count == 0) {
+					view.displayMessage("You have no orders yet!");
+					view.pressDummyButton(createClientFirstOptionListener());
+				}
+				else {
+					List<List<String>> carts = new ArrayList<>();
+					String[] locations = new String[count];
+					for(int i = 0 ; i < count ; i++) {
+						carts.add((List<String>) model.receiveObject());
+						locations[i] = model.receiveObject().toString();
+					}
+					carts.removeIf(x -> x.isEmpty());
+					if(carts.isEmpty()) {
+						view.displayMessage("You have no recreatable orders!");
+						model.sendMessage(GO_BACK);
+						view.pressDummyButton(createClientFirstOptionListener());
+					}
+					else {
+						view.reCreateOrder(carts,locations);
+					}
+				}
+			}
+			
+		};
+	}
+	
+	
 	private static ActionListener createAddListener() {
 		return new ActionListener() {
 
@@ -229,6 +313,7 @@ public class UserController {
 			public void actionPerformed(ActionEvent e) {
 				view.clearFrame();
 				view.displayMessage("User Logged Out!");
+				view.setMove(0);
 				model.sendMessage(LOG_OUT);
 				view.showMenu();
 			}
@@ -272,6 +357,26 @@ public class UserController {
 		};
 	}
 	
+	public static ActionListener createPreviousReorderListener(List<List<String>> carts,String[] locations) {
+		return new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(view.getMove() == 0) {
+					view.displayMessage("No previous order!");
+				}
+				else {
+					view.clearFrame();
+					view.setMove(view.getMove() - 1);
+					view.reCreateOrder(carts, locations);
+				}
+				
+			}
+			
+		};
+	}
+	
+	
 	public static ActionListener createNextListener(List<List<Object>> orders , List<List<String>> carts) {
 		return new ActionListener() {
 
@@ -286,6 +391,120 @@ public class UserController {
 					view.viewOrders(orders, carts);
 				}
 				
+			}
+			
+		};
+	}
+	
+	public static ActionListener createNextReorderListener(List<List<String>> carts,String[] locations) {
+		return new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if(view.getMove() == carts.size() - 1) {
+					view.displayMessage("No next order!");
+				}
+				else {
+					view.clearFrame();
+					view.setMove(view.getMove() + 1);
+					view.reCreateOrder(carts, locations);
+				}
+				
+			}
+			
+		};
+	}
+	
+	private static ActionListener createProceedToOrderListener() {
+		return new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				model.sendMessage(PROCEED_TO_ORDER);
+				view.clearFrame();
+				view.pressDummyButton(createClientFirstOptionListener());
+			}
+			
+		};
+	}
+	
+	private static ActionListener createAddToCartListener(int index) {
+		return new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				List<String> fields = view.getTextFields();
+				int amount = model.addToCart(fields.get(index), fields.get(index+2));
+				view.displayMessage("You have " + amount + " " + fields.get(index) + (amount>1 ? "'s " : " ") + "in your cart!");
+			}
+			
+		};
+	}
+	
+	private static ActionListener createRemoveFromCartListener(int index) {
+		count+=3;
+		return new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				List<String> fields = view.getTextFields();
+				int result = model.removeFromCart(fields.get(index));
+				view.displayMessage(result == 0 ? "Item not present in cart!" : "Item removed from cart!");
+			}
+			
+		};
+	}
+	
+	private static ActionListener createEnterLocationListener() {
+		return new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				List<String> fields = view.getTextFields();
+				if(fields.get(0).isEmpty()) {
+					view.displayMessage("Please enter a location!");
+				}
+				else {
+					view.clearFrame();
+					view.createOrder(fields.get(0),model.getCart());
+				}
+				
+			}
+			
+		};
+	}
+	
+	public static ActionListener createOrderListener(String location,List<String> cart) {
+		return new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int result = model.createOrder(location, cart);
+				if(result == FAIL) {
+					view.displayMessage("Order creation failed!");
+				}
+				else {
+					view.displayMessage("Order creation successful!");
+				}
+			}
+			
+		};
+	}
+	
+	public static ActionListener createReOrderListener(String location,List<String> cart) {
+		return new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int result = model.createOrder(location, cart);
+				if(result == FAIL) {
+					view.displayMessage("Order creation failed!");
+				}
+				else {
+					view.displayMessage("Order creation successful!");
+				}
+				view.clearFrame();
+				view.pressDummyButton(createClientThirdOptionListener(1));
 			}
 			
 		};

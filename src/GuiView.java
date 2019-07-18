@@ -15,7 +15,6 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 import static constants.Constants.*;
-
 public class GuiView {
 	private List<JTextField> textFields = new ArrayList<>();
 	private JFrame currFrame;
@@ -115,6 +114,9 @@ public class GuiView {
 				frame.add(b3);
 				frame.add(b4);
 				
+				b1.addActionListener(addListener(CLIENT_MENU_FIRST));
+				b2.addActionListener(addListener(CLIENT_MENU_SECOND));
+				b3.addActionListener(addListener(CLIENT_MENU_THIRD));
 				b4.addActionListener(addListener(LOG_OUT));
 				
 				
@@ -338,6 +340,190 @@ public class GuiView {
 		frame.setVisible(true);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
+	
+	public void viewProducts(List<Object> products) {
+		JFrame frame = new JFrame("View menu");
+		currFrame = frame;
+		frame.setSize(750,50*(products.size()/3));
+		frame.setLayout(new GridLayout(2+(products.size()/3),5));
+		
+		JButton back = new JButton("Back");
+		back.addActionListener(addListener(GO_BACK));
+		frame.add(back);
+		frame.add(new JLabel(" "));
+		frame.add(new JLabel(" "));
+		frame.add(new JLabel(" "));
+		JButton toOrder = new JButton("Proceed to order");
+		toOrder.addActionListener(addListener(PROCEED_TO_ORDER));
+		frame.add(toOrder);
+		
+		frame.add(new JLabel("Product name"));
+		frame.add(new JLabel("Quantity"));
+		frame.add(new JLabel("Price(lv.)"));
+		frame.add(new JLabel(" "));
+		frame.add(new JLabel(" "));
+		
+		for(int i = 0 ; i < products.size() ; i+=3) {
+			
+			JTextField b1 = new JTextField(products.get(i).toString());
+			textFields.add(b1);
+			b1.setEditable(false);
+			frame.add(b1);
+			
+			JTextField b2 = new JTextField(products.get(i+1).toString());
+			textFields.add(b2);
+			b2.setEditable(false);
+			frame.add(b2);
+			
+			JTextField b3 = new JTextField(products.get(i+2).toString());
+			textFields.add(b3);
+			b3.setEditable(false);
+			frame.add(b3);
+			
+			JButton add = new JButton("Add to Cart");
+			add.addActionListener(addListener(ADD_TO_CART));
+			frame.add(add);
+			
+			JButton remove = new JButton("Remove from Cart");
+			remove.addActionListener(addListener(REMOVE_FROM_CART));
+			frame.add(remove);	
+		}
+		
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setVisible(true);
+	}
+	
+	public void enterLocation() {
+		
+		JFrame frame = new JFrame("Enter location");
+		currFrame = frame;
+		frame.setSize(300, 100);
+		frame.setLayout(new GridLayout(1,2));
+		
+		JTextField t1 = new JTextField();
+		textFields.add(t1);
+		frame.add(t1);
+		
+		JButton b1 = new JButton("Confirm");
+		frame.add(b1);
+		b1.addActionListener(addListener(ENTER_LOCATION));
+		
+		frame.setVisible(true);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	}
+	
+	public void pressDummyButton(ActionListener listener) {
+		JButton button = new JButton();
+		button.addActionListener(listener);
+		button.doClick();
+	}
+	
+	public void createOrder(String location,List<String> cart) {
+		double sum = 0;
+		JFrame frame = new JFrame("Create an order");
+		currFrame = frame;
+		frame.setSize(600,100*cart.size()/3);
+		frame.setLayout(new GridLayout(2+(cart.size()/3),4));
+		frame.add(new JLabel("Product name"));
+		frame.add(new JLabel("Quantity in cart"));
+		frame.add(new JLabel("Price"));
+		
+		JButton button = new JButton("Order");
+		button.addActionListener(UserController.createOrderListener(location,cart));
+		frame.add(button);
+		
+		for(int i = 0 ; i < cart.size() ; i+=3) {
+			JTextField t1 = new JTextField(cart.get(i));
+			t1.setEditable(false);
+			frame.add(t1);
+			
+			JTextField t2 = new JTextField(cart.get(i+1));
+			t2.setEditable(false);
+			frame.add(t2);
+			
+			JTextField t3 = new JTextField(cart.get(i+2));
+			t3.setEditable(false);
+			frame.add(t3);
+			
+			double temp = Integer.parseInt(cart.get(i+1))*Double.parseDouble(cart.get(i+2));
+			JTextField t4 = new JTextField("Subtotal: " + temp);
+			t4.setEditable(false);
+			frame.add(t4);
+			sum+=temp;
+		}
+		
+		JButton back = new JButton("Back");
+		back.addActionListener(addListener(GO_BACK));
+		frame.add(back);
+		
+		frame.add(new JLabel(" "));
+		frame.add(new JLabel(" "));
+		
+		JTextField total = new JTextField("Total: " + sum);
+		total.setEditable(false);
+		frame.add(total);
+		
+		frame.setVisible(true);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	}
+	
+	public void reCreateOrder(List<List<String>> carts,String[] locations) {
+		double sum = 0;
+		JFrame frame = new JFrame("Repeat order");
+		currFrame = frame;
+		frame.setSize(600,100*carts.get(move).size()/3);
+		frame.setLayout(new GridLayout(2+(carts.get(move).size()/3),4));
+		frame.add(new JLabel("Product name"));
+		frame.add(new JLabel("Quantity in cart"));
+		frame.add(new JLabel("Price"));
+		
+		JTextField total = new JTextField();
+		total.setEditable(false);
+
+		frame.add(total);
+		
+		for(int i = 0 ; i < carts.get(move).size() ; i+=3) {
+			JTextField t1 = new JTextField(carts.get(move).get(i));
+			t1.setEditable(false);
+			frame.add(t1);
+			
+			JTextField t2 = new JTextField(carts.get(move).get(i+1));
+			t2.setEditable(false);
+			frame.add(t2);
+			
+			JTextField t3 = new JTextField(carts.get(move).get(i+2));
+			t3.setEditable(false);
+			frame.add(t3);
+			
+			double temp = Integer.parseInt(carts.get(move).get(i+1))*Double.parseDouble(carts.get(move).get(i+2));
+			JTextField t4 = new JTextField("Subtotal: " + temp);
+			t4.setEditable(false);
+			frame.add(t4);
+			sum+=temp;
+		}
+		
+		total.setText("Total: " + sum);
+		
+		JButton back = new JButton("Back");
+		back.addActionListener(addListener(GO_BACK));
+		frame.add(back);
+		
+		JButton previous = new JButton("Previous");
+		previous.addActionListener(UserController.createPreviousReorderListener(carts, locations));
+		JButton next = new JButton("Next");
+		next.addActionListener(UserController.createNextReorderListener(carts, locations));
+		
+		frame.add(previous);
+		frame.add(next);
+		
+		JButton button = new JButton("Order");
+		button.addActionListener(UserController.createReOrderListener(locations[move], carts.get(move)));
+		frame.add(button);
+		
+		frame.setVisible(true);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	}
+	
 	
 	public ActionListener addListener(String command) {
 		return UserController.createListener(command);

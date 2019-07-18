@@ -15,10 +15,12 @@ public class UserModel {
 	private PrintStream printout;
 	private ObjScanWrapper objScan;
 	private boolean userIsAdmin;
+	private List<String> cart;
 	
 	public UserModel(Socket socket) throws IOException {
 		printout = new PrintStream(socket.getOutputStream());
 		objScan = new ObjScanWrapper(new ObjectInputStream(socket.getInputStream()));
+		cart = new ArrayList<>();
 	}
 	
 	public int logUser(String username , String password) {
@@ -108,6 +110,48 @@ public class UserModel {
 		return carts;
 	}
 	
+	public int addToCart(String product,String price) {
+		if(cart.contains(product)) {
+			int temp = Integer.parseInt(cart.get(cart.indexOf(product)+1));
+			temp++;
+			cart.set(cart.indexOf(product)+1, String.valueOf(temp));
+			return temp;
+		}
+		else {
+			cart.add(product);
+			cart.add(String.valueOf(1));
+			cart.add(price);
+			return 1;
+		}
+}
+
+	public int removeFromCart(String product) {
+		if(cart.contains(product)) {
+			cart.remove(cart.indexOf(product)+1);
+			cart.remove(cart.indexOf(product)+1);
+			cart.remove(product);
+			return SUCCESS;
+		}
+		else return FAIL;
+	}
+	
+	public int createOrder(String location,List<String> cart) {
+			printout.println(CREATE);
+			printout.println(location);
+			sendCart(cart);
+			int result = (int)objScan.readObject();
+			return result;
+			
+	}
+
+	public void sendCart(List<String> cart) {
+		printout.println(String.valueOf(cart.size()));
+		for(String str : cart) {
+			printout.println(str);
+		}
+	}
+	
+	
 	public void sendMessage(String message) {
 		printout.println(message);
 	}	
@@ -124,5 +168,9 @@ public class UserModel {
 
 	public void setUserIsAdmin(boolean userIsAdmin) {
 		this.userIsAdmin = userIsAdmin;
+	}
+
+	public List<String> getCart() {
+		return cart;
 	}
 }
