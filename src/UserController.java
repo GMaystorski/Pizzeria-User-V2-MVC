@@ -33,6 +33,7 @@ public class UserController {
 			case CHANGE_TO_ADMIN : return createChangeTypeListener(count,1);
 			case CHANGE_TO_CLIENT : return createChangeTypeListener(count,0);
 			case GET_ORDERS : return createGetOrdersListener();
+			
 			case PROCEED_TO_ORDER : return createProceedToOrderListener();
 			case ADD_TO_CART : return createAddToCartListener(count);
 			case REMOVE_FROM_CART : return createRemoveFromCartListener(count);
@@ -519,6 +520,10 @@ public class UserController {
 			}
 			
 		};
+	}
+	
+	public static void start() {
+		view.showMenu();
 	}
 
 	public static GuiView getView() {

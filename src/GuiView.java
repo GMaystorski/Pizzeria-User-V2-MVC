@@ -548,21 +548,11 @@ public class GuiView {
 		textFields.clear();
 	}
 	
-	public void printFields() {
-		for(JTextField text : textFields) {
-			System.out.println(text.getText());
-		}
-	}
-	
-	public void setFrameVisible() {
-		currFrame.setVisible(true);
-	}
 	
 	public void displayMessage(String text) {
 		JOptionPane.showMessageDialog(null, text);
 	}
 
-	
 	
 	public int getMove() {
 		return move;

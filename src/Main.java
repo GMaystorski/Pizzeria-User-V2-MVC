@@ -10,7 +10,7 @@ public class Main {
 			GuiView view = new GuiView();
 			UserController.setModel(model);
 			UserController.setView(view);
-			view.showMenu();
+			UserController.start();
 		}
 		catch(IOException e) {
 			System.out.println(e.getMessage());
